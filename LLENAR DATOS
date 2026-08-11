@@ -1,0 +1,8 @@
+USE api_db;
+
+INSERT INTO usuarios (nombre, correo) VALUES 
+('Ana Gómez', 'ana.gomez@example.com'),
+('Carlos Ruiz', 'carlos.ruiz@example.com'),
+('María Rodríguez', 'maria.rodriguez@example.com'),
+('Luis Fernández', 'luis.fernandez@example.com'),
+('Elena Torres', 'elena.torres@example.com');
