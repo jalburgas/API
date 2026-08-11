@@ -1,0 +1,36 @@
+# ¿Qué es REST?
+
+**REST** (por sus siglas en inglés, *Representational State Transfer*, o Transferencia de Estado Representacional) es un estilo de arquitectura de software para diseñar servicios web. No es un lenguaje de programación ni un protocolo estricto, sino un **conjunto de reglas y buenas prácticas** que permiten que diferentes sistemas se comuniquen entre sí a través de internet utilizando el protocolo HTTP.
+
+Una API que cumple con estos principios se conoce comúnmente como una **API REST** o RESTful.
+
+---
+
+## Principios Fundamentales de REST
+
+Una arquitectura REST se basa en los siguientes pilares clave:
+
+* **Modelo Cliente-Servidor:** El cliente (una aplicación web, móvil, etc.) y el servidor (donde residen los datos y la lógica) están separados y operan de forma independiente.
+* **Sin Estado (*Stateless*):** Cada solicitud del cliente al servidor debe contener toda la información necesaria para ser procesada. El servidor no almacena contexto sobre la sesión del cliente.
+* **Cacheable:** Las respuestas del servidor deben indicar explícitamente si pueden almacenarse en caché para optimizar el rendimiento y reducir el tráfico de red.
+* **Interfaz Uniforme:** Estandariza la forma en que los clientes interactúan con los recursos mediante el uso de operaciones HTTP estándar.
+* **Sistema en Capas:** Permite que la arquitectura incluya intermediarios (como servidores proxy o balanceadores de carga) sin que el cliente necesite saber si está conectado directamente al servidor final.
+
+---
+
+## Métodos HTTP Principales
+
+En una API REST, los elementos del sistema se tratan como **recursos** (por ejemplo, usuarios, productos, pedidos) y se manipulan utilizando los métodos estándar de HTTP:
+
+| Método HTTP | Acción Asociada | Descripción |
+| --- | --- | --- |
+| **GET** | Leer | Consultar uno o varios recursos existentes. |
+| **POST** | Crear | Registrar un nuevo recurso en el servidor. |
+| **PUT / PATCH** | Actualizar | Modificar total o parcialmente un recurso existente. |
+| **DELETE** | Eliminar | Borrar un recurso específico del sistema. |
+
+---
+
+## Formato de Datos
+
+Aunque una API REST es independiente del formato de intercambio, el estándar de la industria actual es **JSON** (*JavaScript Object Notation*) debido a su ligereza, facilidad de lectura y compatibilidad nativa con la gran mayoría de lenguajes y plataformas de desarrollo modernos.
