@@ -1,0 +1,12 @@
+1. Estructura de la Base de Datos
+
+Ejecuta el siguiente código SQL en tu gestor de base de datos MySQL (como phpMyAdmin o la consola) para crear la base de datos y la tabla necesaria:
+CREATE DATABASE IF NOT EXISTS api_db;
+USE api_db;
+
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    correo VARCHAR(100) NOT NULL UNIQUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
