@@ -1,0 +1,13 @@
+. Cómo Probar la API
+
+Puedes utilizar herramientas como Postman, cURL o clientes HTTP integrados para interactuar con tu script (http://localhost/tu_proyecto/api.php):
+
+    Para Consultar Datos (Método GET):
+    Realiza una solicitud GET directamente a la URL. Te devolverá un JSON con la lista de usuarios.
+
+    Para Insertar Datos (Método POST):
+    Realiza una solicitud POST enviando un JSON en el cuerpo (body) con la siguiente
+{
+    "nombre": "Juan Pérez",
+    "correo": "juan.perez@example.com"
+}
