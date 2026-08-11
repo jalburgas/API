@@ -1,0 +1,54 @@
+# ¿Qué es cURL?
+
+**cURL** (Client URL) es una potente herramienta de línea de comandos y una biblioteca (`libcurl`) que permite transferir datos hacia o desde un servidor utilizando una gran variedad de protocolos, siendo **HTTP y HTTPS** los más comunes.
+
+Es una utilidad indispensable para desarrolladores, ya que permite interactuar con servidores y probar APIs directamente desde la terminal sin necesidad de instalar interfaces gráficas pesadas.
+
+---
+
+## Opciones Principales de cURL
+
+Para interactuar con APIs, cURL utiliza banderas o parámetros clave que modifican el comportamiento de la petición:
+
+| Bandera | Descripción |
+| --- | --- |
+| `-X [MÉTODO]` | Define el método HTTP a utilizar (ej. `GET`, `POST`, `PUT`, `DELETE`). |
+| `-H "[Encabezado]"` | Añade cabeceras HTTP a la petición (ej. `Content-Type: application/json`). |
+| `-d '[Datos]'` | Envía datos en el cuerpo (*body*) de la petición (habitualmente para `POST` o `PUT`). |
+| `-i` | Muestra los encabezados de la respuesta HTTP junto con el cuerpo. |
+| `-v` | Modo detallado (*verbose*), útil para depurar todo el intercambio de red. |
+
+---
+
+## Ejemplo Práctico con una API
+
+Tomando como referencia la API de usuarios desarrollada anteriormente, aquí tienes cómo puedes utilizar cURL desde tu terminal para probarla.
+
+### 1. Consultar todos los registros (Método GET)
+
+Para hacer una solicitud de lectura a la API, simplemente ejecuta el comando apuntando a la URL del archivo:
+
+```bash
+curl -X GET http://localhost/tu_proyecto/api.php
+
+```
+
+* **Qué hace:** Envía una petición `GET` y la API responde imprimiendo en la terminal el JSON con la lista de usuarios almacenados en la base de datos.
+
+---
+
+### 2. Crear un nuevo registro (Método POST)
+
+Para enviar datos nuevos (como un nombre y un correo en formato JSON), debes configurar el encabezado del contenido y pasar los datos con la bandera `-d`:
+
+```bash
+curl -X POST http://localhost/tu_proyecto/api.php \
+-H "Content-Type: application/json" \
+-d '{"nombre": "Sofía Martínez", "correo": "sofia.martinez@example.com"}'
+
+```
+
+* **Qué hace:**
+* `-X POST`: Indica que se creará un recurso.
+* `-H "Content-Type: application/json"`: Advierte al servidor que los datos enviados están codificados en JSON.
+* `-d '{...}'`: Envía la estructura de datos que la API procesará e insertará en la tabla MySQL.
