@@ -1,0 +1,81 @@
+¿Qué es SOAP?
+
+SOAP (Simple Object Access Protocol) es un protocolo estándar para intercambiar información estructurada en servicios web utilizando XML. A diferencia de REST (que es un estilo de arquitectura basado en recursos y soporta JSON, HTML, etc.), SOAP es estrictamente un protocolo y depende de XML para sus mensajes.
+
+Destaca por su alta seguridad, control de errores integrado y contratos estrictos definidos mediante archivos WSDL (Web Services Description Language).
+Estructura de un mensaje SOAP
+
+Un mensaje SOAP es un documento XML que contiene obligatoriamente un Envelope (Sobre) y un Body (Cuerpo), con la opción de incluir un Header (Cabecera).
+
+    Envelope (Sobre): Es el elemento raíz que identifica al documento XML como un mensaje SOAP.
+
+    Header (Cabecera): Opcional. Contiene metadatos como seguridad o autenticación.
+
+    Body (Cuerpo): Contiene la llamada al método (solicitud) o la respuesta devuelta por el servidor.
+
+    Fault (Fallo): Si ocurre un error, este elemento se incluye dentro del Body para detallar qué falló.
+
+Flujo de trabajo SOAP paso a paso
+
+    Definición del contrato (WSDL): Se definen las funciones, parámetros y tipos de datos disponibles.
+
+    Generación del mensaje: El cliente crea una solicitud en formato XML envuelta en un SOAP Envelope.
+
+    Envío de la petición: El cliente envía el XML al servidor mediante HTTP(S) (usualmente POST).
+
+    Procesamiento: El servidor recibe el XML, ejecuta la función solicitada y genera una respuesta también en XML.
+
+    Recepción: El cliente recibe la respuesta XML, la interpreta y extrae los datos.
+
+Ejemplo práctico en PHP
+
+PHP utiliza las clases SoapServer (para el servidor) y SoapClient (para el cliente). En este ejemplo usaremos el modo sin WSDL para simplificar.
+1. Servidor (server.php)
+
+Este archivo define qué métodos pueden ser ejecutados remotamente.
+<?php
+class MiServicioWeb {
+    
+    public function saludar($nombre) {
+        return "¡Hola, " . htmlspecialchars($nombre) . "! Bienvenido a nuestro servicio SOAP.";
+    }
+
+    public function sumar($a, $b) {
+        if (!is_numeric($a) || !is_numeric($b)) {
+            throw new SoapFault("Server", "Los parámetros deben ser numéricos.");
+        }
+        return $a + $b;
+    }
+}
+
+$options = [
+    'uri' => 'http://localhost/soap/server.php'
+];
+
+$server = new SoapServer(null, $options);
+$server->setClass('MiServicioWeb');
+$server->handle();
+?>
+2. Cliente (client.php)
+
+Este archivo consume el servicio configurado en el servidor.
+<?php
+$options = [
+    'location' => 'http://localhost/soap/server.php',
+    'uri'      => 'http://localhost/soap/server.php',
+    'trace'    => 1
+];
+
+try {
+    $client = new SoapClient(null, $options);
+
+    // Llamada al método 'saludar'
+    echo "Respuesta de Saludo: " . $client->saludar("Carlos") . "<br>";
+
+    // Llamada al método 'sumar'
+    echo "Resultado de la suma: " . $client->sumar(15, 25);
+
+} catch (SoapFault $e) {
+    echo "Error SOAP: " . $e->getMessage();
+}
+?>
