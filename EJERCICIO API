@@ -1,0 +1,252 @@
+Estructura del Taller
+
+    Nivel: Principiante / Novato
+
+    Duración: 2 a 3 horas
+
+    Requisitos previos: Servidor local (XAMPP, Laragon o php -S), PHP 7.4 o superior y Postman / Thunder Client.
+
+Paso 1: Configurar la Base de Datos
+
+Ejecuta el siguiente script SQL en tu gestor de base de datos (MySQL / MariaDB) para crear la tabla de productos:
+CREATE DATABASE IF NOT EXISTS taller_api;
+USE taller_api;
+
+CREATE TABLE productos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    precio DECIMAL(10,2) NOT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO productos (nombre, precio) VALUES
+('Teclado Mecánico', 45.00),
+('Mouse Inalámbrico', 20.00);
+
+
+LLENAR DATOS
+USE taller_api;
+
+-- Limpia datos previos si existen
+TRUNCATE TABLE productos;
+
+-- Inserción masiva de datos de prueba
+INSERT INTO productos (nombre, precio) VALUES
+-- Periféricos
+('Teclado Mecánico RGB Redragon', 45.99),
+('Mouse Inalámbrico Logitech MX Master 3S', 99.50),
+('Audífonos Gamer HyperX Cloud II', 79.99),
+('Mousepad XL Antideslizante', 15.00),
+('Webcam Full HD 1080p Logitech C920', 65.00),
+('Micrófono Condensador Fifine K669B', 38.50),
+
+-- Monitores y Pantallas
+('Monitor Gamer 24" 144Hz AOC', 160.00),
+('Monitor Curvo 27" Samsung Odyssey', 230.00),
+('Soporte Doble para Monitor', 35.00),
+
+-- Componentes y Almacenamiento
+('Disco Duro Externo 1TB Toshiba', 52.00),
+('SSD NVMe M.2 500GB Kingston', 42.50),
+('Memoria RAM DDR4 16GB Corsair Vengeance', 55.00),
+('Tarjeta de Video RTX 3060 12GB', 285.00),
+
+-- Accesorios de Oficina y Redes
+('Silla Ergonómica de Oficina', 120.00),
+('Lámpara LED para Monitor', 28.00),
+('Hub USB-C 7 en 1 Anker', 32.00),
+('Router Wi-Fi 6 TP-Link Archer', 68.00),
+('Cable Ethernet Cat 6 (10 metros)', 8.50);
+
+Archivo de Conexión (conexion.php)
+<?php
+
+class Conexion {
+    private $host = "localhost";
+    private $usuario = "root";
+    private $password = "";
+    private $base_datos = "taller_api";
+    private $puerto = 3306;
+    
+    public $conexion;
+
+    // Conectar a la base de datos en el constructor
+    public function __construct() {
+        // Desactivar el reporte directo para manejar los errores manualmente
+        mysqli_report(MYSQLI_REPORT_OFF);
+
+        $this->conexion = new mysqli(
+            $this->host, 
+            $this->usuario, 
+            $this->password, 
+            $this->base_datos, 
+            $this->puerto
+        );
+
+        // Validar si ocurrió un error en la conexión
+        if ($this->conexion->connect_error) {
+            http_response_code(500);
+            echo json_encode([
+                "error" => true,
+                "mensaje" => "Error de conexión: " . $this->conexion->connect_error
+            ]);
+            exit;
+        }
+
+        // Estipular el conjunto de caracteres a UTF-8
+        $this->conexion->set_charset("utf8");
+    }
+
+    // Método opcional para obtener la instancia de la conexión
+    public function obtenerConexion() {
+        return $this->conexion;
+    }
+
+    // Cerrar la conexión
+    public function cerrar() {
+        if ($this->conexion) {
+            $this->conexion->close();
+        }
+    }
+}
+Paso 3: Endpoint Principal de la API (index.php)
+
+Este archivo manejará las peticiones HTTP (GET, POST, PUT, DELETE).
+
+<?php
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+include_once 'conexion.php';
+
+$conexion = new Conexion();
+$db = $conexion->obtenerConexion();
+
+$metodo = $_SERVER['REQUEST_METHOD'];
+
+switch ($metodo) {
+    case 'GET':
+        obtenerProductos($db);
+        break;
+    case 'POST':
+        crearProducto($db);
+        break;
+    case 'PUT':
+        actualizarProducto($db);
+        break;
+    case 'DELETE':
+        eliminarProducto($db);
+        break;
+    default:
+        http_response_code(405);
+        echo json_encode(["mensaje" => "Método no permitido"]);
+        break;
+}
+
+// 1. Obtener uno o todos los productos
+function obtenerProductos($db) {
+    if (isset($_GET['id'])) {
+        $query = "SELECT * FROM productos WHERE id = :id";
+        $stmt = $db->prepare($query);
+        $stmt->bindParam(':id', $_GET['id']);
+        $stmt->execute();
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($resultado) {
+            echo json_encode($resultado);
+        } else {
+            http_response_code(404);
+            echo json_encode(["mensaje" => "Producto no encontrado"]);
+        }
+    } else {
+        $query = "SELECT * FROM productos";
+        $stmt = $db->prepare($query);
+        $stmt->execute();
+        $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($productos);
+    }
+}
+
+// 2. Crear un nuevo producto
+function crearProducto($db) {
+    $datos = json_decode(file_get_contents("php://input"), true);
+
+    if (!empty($datos['nombre']) && !empty($datos['precio'])) {
+        $query = "INSERT INTO productos (nombre, precio) VALUES (:nombre, :precio)";
+        $stmt = $db->prepare($query);
+
+        $stmt->bindParam(':nombre', $datos['nombre']);
+        $stmt->bindParam(':precio', $datos['precio']);
+
+        if ($stmt->execute()) {
+            http_response_code(201);
+            echo json_encode(["mensaje" => "Producto creado exitosamente"]);
+        } else {
+            http_response_code(500);
+            echo json_encode(["mensaje" => "Error al crear producto"]);
+        }
+    } else {
+        http_response_code(400);
+        echo json_encode(["mensaje" => "Datos incompletos"]);
+    }
+}
+
+// 3. Actualizar un producto
+function actualizarProducto($db) {
+    $datos = json_decode(file_get_contents("php://input"), true);
+
+    if (!empty($datos['id']) && !empty($datos['nombre']) && !empty($datos['precio'])) {
+        $query = "UPDATE productos SET nombre = :nombre, precio = :precio WHERE id = :id";
+        $stmt = $db->prepare($query);
+
+        $stmt->bindParam(':id', $datos['id']);
+        $stmt->bindParam(':nombre', $datos['nombre']);
+        $stmt->bindParam(':precio', $datos['precio']);
+
+        if ($stmt->execute()) {
+            echo json_encode(["mensaje" => "Producto actualizado"]);
+        } else {
+            http_response_code(500);
+            echo json_encode(["mensaje" => "Error al actualizar"]);
+        }
+    } else {
+        http_response_code(400);
+        echo json_encode(["mensaje" => "Faltan datos para actualizar"]);
+    }
+}
+
+// 4. Eliminar un producto
+function eliminarProducto($db) {
+    $datos = json_decode(file_get_contents("php://input"), true);
+
+    if (!empty($datos['id'])) {
+        $query = "DELETE FROM productos WHERE id = :id";
+        $stmt = $db->prepare($query);
+        $stmt->bindParam(':id', $datos['id']);
+
+        if ($stmt->execute()) {
+            echo json_encode(["mensaje" => "Producto eliminado"]);
+        } else {
+            http_response_code(500);
+            echo json_encode(["mensaje" => "Error al eliminar"]);
+        }
+    } else {
+        http_response_code(400);
+        echo json_encode(["mensaje" => "ID no proporcionado"]);
+    }
+}
+
+### **Paso 4: Pruebas con Postman o Thunder Client**
+
+#### **Tabla de Endpoints y Métodos**
+
+| Acción | Método HTTP | URL | Body (JSON) |
+| :--- | :--- | :--- | :--- |
+| Listar todos | `GET` | `http://localhost/taller_api/index.php` | N/A |
+| Ver por ID | `GET` | `http://localhost/taller_api/index.php?id=1` | N/A |
+| Crear nuevo | `POST` | `http://localhost/taller_api/index.php` | `{"nombre": "Monitor", "precio": 150.00}` |
+| Actualizar | `PUT` | `http://localhost/taller_api/index.php` | `{"id": 1, "nombre": "Teclado RGB", "precio": 55.00}` |
+| Eliminar | `DELETE` | `http://localhost/taller_api/index.php` | `{"id": 1}` |
+
